@@ -1,18 +1,35 @@
-import { useRef, useState, useEffect } from "react";
+import {useRef, useState, useEffect, useMemo} from "react";
 import {useAppContext} from "../context";
 
 export default function Layout({ children}) {
     const {addCotation} = useAppContext();
+    const [response, setResponse] = useState({
+        "Nom": null,
+        "Prenoms": null,
+        "Message": null,
+        "Contacts": null,
+        "email": null
+    })
     const inputRef = useRef()
     const textRef = useRef()
     const [isCollapsed, collapse] = useState(false)
   
     const toggleVisibility = () => collapse(!isCollapsed);
-    const handleOnChange = e => console.log(e.targetValue);
-    const handleOnSubmit = e => e.preventDefault();
-    useEffect( () =>{
-      // TODO document why this arrow function is empty
-    } )
+    const handleOnChange = e => {
+        setResponse({...response, [e.target.name]: e.target.value})
+        console.log(e.targetValue);
+    }
+    const handleOnSubmit = e => {
+        e.preventDefault();
+        addCotation(response)
+        inputRef.current.value = null;
+        textRef.current.value = null;
+        toggleVisibility(false)
+
+    }
+    const isValid = useMemo(() =>{
+        return Object.values(response).some(value => !value);
+    },[response])
     return(
     <>
         <nav className="navbar navbar-expand-lg navbar-light bg-light fixed-top">
@@ -35,9 +52,12 @@ export default function Layout({ children}) {
             <button className="btn btn-dark float-end" onClick={toggleVisibility}>{isCollapsed ? 'Close' : 'Add +'}</button>
             {isCollapsed && 
             <form className="mt-5" onSubmit={handleOnSubmit}>
-                <input ref={inputRef} type="text" name="title" className="form-control mb-3" id="exampleInputEmail1" onChange={handleOnChange} aria-describedby="emailHelp" placeholder="title" />
-                <textarea ref={textRef} name="content" rows="4"  className="form-control mb-3" onChange={handleOnChange} placeholder="content"></textarea>
-                <button type="submit" className="btn btn-primary mb-5 float-end">Submit</button>
+                <input ref={inputRef} type="text" name="Nom" className="form-control mb-3" id="exampleInputEmail1" onChange={handleOnChange} aria-describedby="emailHelp" placeholder="Votre Nom" />
+                <input ref={inputRef} type="text" name="Prenoms" className="form-control mb-3" id="exampleInputEmail1" onChange={handleOnChange} aria-describedby="emailHelp" placeholder="Votre/Vos Prenom(s)" />
+                <input ref={inputRef} type="text" name="Contacts" className="form-control mb-3" id="exampleInputEmail1" onChange={handleOnChange} aria-describedby="emailHelp" placeholder="Votre/Vos Contact(s)" />
+                <input ref={inputRef} type="text" name="email" className="form-control mb-3" id="exampleInputEmail1" onChange={handleOnChange} aria-describedby="emailHelp" placeholder="Votre Email" />
+                <textarea ref={textRef} name="Message" rows="4"  className="form-control mb-3" onChange={handleOnChange} placeholder="Rediger votre message"></textarea>
+                <button type="submit" className="btn btn-primary mb-5 float-end" disabled={isValid}>Submit</button>
             </form>}
                 {children}
             </div>
